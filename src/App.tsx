@@ -19,6 +19,25 @@ export function App() {
   const [isLoading, setIsLoading] = useState(false)
   const [chartType, setChartType] = useState<ChartType>("area")
   const [error, setError] = useState<string | null>(null)
+  const [healthStatus, setHealthStatus] = useState<string | null>(null)
+  const [healthLoading, setHealthLoading] = useState(false)
+
+  const checkHealth = async () => {
+    setHealthLoading(true)
+    setHealthStatus(null)
+    try {
+      const response = await fetch("/api/health")
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      const data = await response.json()
+      setHealthStatus(data.status || "ok")
+    } catch (err) {
+      setHealthStatus(`Error: ${err instanceof Error ? err.message : "Failed"}`)
+    } finally {
+      setHealthLoading(false)
+    }
+  }
 
   const handleQueryExecute = async (sql: string) => {
     setIsLoading(true)
@@ -58,6 +77,20 @@ export function App() {
           <span className="ml-2 text-sm text-muted-foreground">
             Analytics Engine Dashboard
           </span>
+          <div className="ml-auto flex items-center gap-2">
+            <button
+              onClick={checkHealth}
+              disabled={healthLoading}
+              className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            >
+              {healthLoading ? "Checking..." : "Check Health"}
+            </button>
+            {healthStatus && (
+              <span className={`text-sm ${healthStatus === "ok" ? "text-green-600" : "text-red-600"}`}>
+                {healthStatus}
+              </span>
+            )}
+          </div>
         </div>
       </header>
 
