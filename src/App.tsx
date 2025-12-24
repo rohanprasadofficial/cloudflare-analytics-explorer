@@ -1,125 +1,292 @@
-import { useState } from "react"
-import { QueryBuilder } from "@/components/query-builder"
-import { ChartDisplay, type ChartType } from "@/components/chart-display"
-import { DataTable } from "@/components/data-table"
+import { useState, useCallback } from 'react';
+import { AppLayout } from '@/components/layout/app-layout';
+import { DashboardView } from '@/components/dashboard/dashboard-view';
+import { DataSourceList } from '@/components/data-sources/data-source-list';
+import { CreateDashboardModal } from '@/components/modals/create-dashboard-modal';
+import { DeleteConfirmModal } from '@/components/modals/delete-confirm-modal';
+import { DataSourceModal } from '@/components/modals/data-source-modal';
+import { TileEditorModal } from '@/components/modals/tile-editor-modal';
+import { useDashboards } from '@/hooks/use-dashboards';
+import { useDataSources } from '@/hooks/use-data-sources';
+import type { Tile, ColumnMapping } from '@/types/dashboard';
 
-// Mock data for demo - will be replaced with actual API calls
-const MOCK_DATA = [
-  { date: "2024-12-19", views: 1250, visitors: 890 },
-  { date: "2024-12-20", views: 1480, visitors: 1020 },
-  { date: "2024-12-21", views: 980, visitors: 720 },
-  { date: "2024-12-22", views: 1120, visitors: 840 },
-  { date: "2024-12-23", views: 1890, visitors: 1340 },
-  { date: "2024-12-24", views: 2100, visitors: 1580 },
-  { date: "2024-12-25", views: 1650, visitors: 1200 },
-]
+type ViewMode = 'dashboard' | 'dataSources';
 
-export function App() {
-  const [queryResult, setQueryResult] = useState<Record<string, unknown>[]>(MOCK_DATA)
-  const [isLoading, setIsLoading] = useState(false)
-  const [chartType, setChartType] = useState<ChartType>("area")
-  const [error, setError] = useState<string | null>(null)
-  const [healthStatus, setHealthStatus] = useState<string | null>(null)
-  const [healthLoading, setHealthLoading] = useState(false)
-
-  const checkHealth = async () => {
-    setHealthLoading(true)
-    setHealthStatus(null)
-    try {
-      const response = await fetch("/api/health")
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`)
-      }
-      const data = await response.json()
-      setHealthStatus(data.status || "ok")
-    } catch (err) {
-      setHealthStatus(`Error: ${err instanceof Error ? err.message : "Failed"}`)
-    } finally {
-      setHealthLoading(false)
-    }
-  }
-
-  const handleQueryExecute = async (sql: string) => {
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      const response = await fetch("/api/query", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sql }),
-      })
-
-      if (!response.ok) {
-        throw new Error(`Query failed: ${response.statusText}`)
-      }
-
-      const result = await response.json()
-
-      // For now, use mock data since AE isn't connected yet
-      // In production: setQueryResult(result.rows || result)
-      console.log("Query result:", result)
-      setQueryResult(MOCK_DATA)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Query failed")
-      // Still show mock data for demo
-      setQueryResult(MOCK_DATA)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="container mx-auto flex h-14 items-center px-4">
-          <h1 className="text-lg font-semibold">Visual AE</h1>
-          <span className="ml-2 text-sm text-muted-foreground">
-            Analytics Engine Dashboard
-          </span>
-          <div className="ml-auto flex items-center gap-2">
-            <button
-              onClick={checkHealth}
-              disabled={healthLoading}
-              className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-            >
-              {healthLoading ? "Checking..." : "Check Health"}
-            </button>
-            {healthStatus && (
-              <span className={`text-sm ${healthStatus === "ok" ? "text-green-600" : "text-red-600"}`}>
-                {healthStatus}
-              </span>
-            )}
-          </div>
-        </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-6">
-        <div className="grid gap-6 lg:grid-cols-2">
-          <div className="lg:col-span-1">
-            <QueryBuilder
-              onQueryExecute={handleQueryExecute}
-              isLoading={isLoading}
-            />
-          </div>
-
-          <div className="lg:col-span-1">
-            <ChartDisplay
-              data={queryResult}
-              title="Query Results"
-              description={error ? `Error: ${error}` : undefined}
-              chartType={chartType}
-              onChartTypeChange={setChartType}
-            />
-          </div>
-
-          <div className="lg:col-span-2">
-            <DataTable data={queryResult} />
-          </div>
-        </div>
-      </main>
-    </div>
-  )
+interface DeleteState {
+  isOpen: boolean;
+  type: 'dashboard' | 'dataSource' | 'tile' | null;
+  id: string | null;
+  name: string;
 }
 
-export default App
+interface DataSourceModalState {
+  isOpen: boolean;
+  mode: 'create' | 'edit';
+  id: string | null;
+}
+
+interface TileModalState {
+  isOpen: boolean;
+  mode: 'create' | 'edit';
+  tileId: string | null;
+}
+
+export function App() {
+  // View state
+  const [viewMode, setViewMode] = useState<ViewMode>('dashboard');
+  const [selectedDataSourceId, setSelectedDataSourceId] = useState<string | null>(null);
+
+  // Modal states
+  const [createDashboardOpen, setCreateDashboardOpen] = useState(false);
+  const [deleteState, setDeleteState] = useState<DeleteState>({
+    isOpen: false,
+    type: null,
+    id: null,
+    name: '',
+  });
+  const [dataSourceModal, setDataSourceModal] = useState<DataSourceModalState>({
+    isOpen: false,
+    mode: 'create',
+    id: null,
+  });
+  const [tileModal, setTileModal] = useState<TileModalState>({
+    isOpen: false,
+    mode: 'create',
+    tileId: null,
+  });
+
+  // Hooks
+  const {
+    dashboards,
+    activeDashboard,
+    activeDashboardId,
+    setActiveDashboardId,
+    createDashboard,
+    updateDashboard,
+    deleteDashboard,
+    duplicateDashboard,
+    addTile,
+    updateTile,
+    deleteTile,
+  } = useDashboards();
+
+  const {
+    dataSources,
+    createDataSource,
+    updateDataSource,
+    deleteDataSource,
+    duplicateDataSource,
+    getDataSource,
+  } = useDataSources();
+
+  // Dashboard handlers
+  const handleDashboardSelect = useCallback((id: string) => {
+    setActiveDashboardId(id);
+    setViewMode('dashboard');
+  }, [setActiveDashboardId]);
+
+  const handleDashboardCreate = useCallback(() => {
+    setCreateDashboardOpen(true);
+  }, []);
+
+  const handleDashboardCreateConfirm = useCallback((name: string, description?: string) => {
+    createDashboard(name, description);
+    setViewMode('dashboard');
+  }, [createDashboard]);
+
+  const handleDashboardDelete = useCallback((id: string) => {
+    const dashboard = dashboards.find((d) => d.id === id);
+    setDeleteState({
+      isOpen: true,
+      type: 'dashboard',
+      id,
+      name: dashboard?.name || 'this dashboard',
+    });
+  }, [dashboards]);
+
+  const handleDashboardDuplicate = useCallback(() => {
+    if (activeDashboardId) {
+      duplicateDashboard(activeDashboardId);
+    }
+  }, [activeDashboardId, duplicateDashboard]);
+
+  // Data source handlers
+  const handleDataSourceSelect = useCallback((id: string) => {
+    setSelectedDataSourceId(id);
+    setViewMode('dataSources');
+  }, []);
+
+  const handleDataSourceCreate = useCallback(() => {
+    setDataSourceModal({ isOpen: true, mode: 'create', id: null });
+  }, []);
+
+  const handleDataSourceEdit = useCallback((id: string) => {
+    setDataSourceModal({ isOpen: true, mode: 'edit', id });
+  }, []);
+
+  const handleDataSourceDelete = useCallback((id: string) => {
+    const ds = getDataSource(id);
+    setDeleteState({
+      isOpen: true,
+      type: 'dataSource',
+      id,
+      name: ds?.name || 'this data source',
+    });
+  }, [getDataSource]);
+
+  const handleDataSourceDuplicate = useCallback((id: string) => {
+    duplicateDataSource(id);
+  }, [duplicateDataSource]);
+
+  const handleDataSourceSave = useCallback(
+    (name: string, endpoint: string, mappings: ColumnMapping[]) => {
+      if (dataSourceModal.mode === 'edit' && dataSourceModal.id) {
+        updateDataSource(dataSourceModal.id, { name, endpoint, columnMappings: mappings });
+      } else {
+        createDataSource(name, endpoint, mappings);
+      }
+    },
+    [dataSourceModal, createDataSource, updateDataSource]
+  );
+
+  // Tile handlers
+  const handleTileAdd = useCallback(() => {
+    setTileModal({ isOpen: true, mode: 'create', tileId: null });
+  }, []);
+
+  const handleTileEdit = useCallback((tileId: string) => {
+    setTileModal({ isOpen: true, mode: 'edit', tileId });
+  }, []);
+
+  const handleTileDelete = useCallback((tileId: string) => {
+    const tile = activeDashboard?.tiles.find((t) => t.id === tileId);
+    setDeleteState({
+      isOpen: true,
+      type: 'tile',
+      id: tileId,
+      name: tile?.title || 'this tile',
+    });
+  }, [activeDashboard]);
+
+  const handleTileSave = useCallback(
+    (tileData: Omit<Tile, 'id' | 'createdAt' | 'updatedAt'>) => {
+      if (!activeDashboardId) return;
+
+      if (tileModal.mode === 'edit' && tileModal.tileId) {
+        updateTile(activeDashboardId, tileModal.tileId, tileData);
+      } else {
+        addTile(activeDashboardId, tileData);
+      }
+    },
+    [activeDashboardId, tileModal, addTile, updateTile]
+  );
+
+  // Delete confirmation handler
+  const handleDeleteConfirm = useCallback(() => {
+    if (!deleteState.id) return;
+
+    switch (deleteState.type) {
+      case 'dashboard':
+        deleteDashboard(deleteState.id);
+        break;
+      case 'dataSource':
+        deleteDataSource(deleteState.id);
+        break;
+      case 'tile':
+        if (activeDashboardId) {
+          deleteTile(activeDashboardId, deleteState.id);
+        }
+        break;
+    }
+
+    setDeleteState({ isOpen: false, type: null, id: null, name: '' });
+  }, [deleteState, deleteDashboard, deleteDataSource, deleteTile, activeDashboardId]);
+
+  // Get current tile for editing
+  const currentTile = tileModal.tileId
+    ? activeDashboard?.tiles.find((t) => t.id === tileModal.tileId)
+    : null;
+
+  // Get current data source for editing
+  const currentDataSource = dataSourceModal.id
+    ? getDataSource(dataSourceModal.id)
+    : null;
+
+  return (
+    <>
+      <AppLayout
+        dashboards={dashboards}
+        dataSources={dataSources}
+        activeDashboardId={activeDashboardId}
+        onDashboardSelect={handleDashboardSelect}
+        onDashboardCreate={handleDashboardCreate}
+        onDashboardDelete={handleDashboardDelete}
+        onDataSourceSelect={handleDataSourceSelect}
+        onDataSourceCreate={handleDataSourceCreate}
+        onDataSourceDelete={handleDataSourceDelete}
+      >
+        {viewMode === 'dashboard' && activeDashboard ? (
+          <DashboardView
+            dashboard={activeDashboard}
+            dataSources={dataSources}
+            onDashboardUpdate={(updates) => updateDashboard(activeDashboard.id, updates)}
+            onDashboardDuplicate={handleDashboardDuplicate}
+            onDashboardDelete={() => handleDashboardDelete(activeDashboard.id)}
+            onTileAdd={handleTileAdd}
+            onTileEdit={handleTileEdit}
+            onTileDelete={handleTileDelete}
+          />
+        ) : viewMode === 'dataSources' ? (
+          <DataSourceList
+            dataSources={dataSources}
+            selectedId={selectedDataSourceId}
+            onSelect={setSelectedDataSourceId}
+            onCreate={handleDataSourceCreate}
+            onEdit={handleDataSourceEdit}
+            onDelete={handleDataSourceDelete}
+            onDuplicate={handleDataSourceDuplicate}
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center text-muted-foreground">
+            <p>Select a dashboard or create a new one</p>
+          </div>
+        )}
+      </AppLayout>
+
+      {/* Modals */}
+      <CreateDashboardModal
+        isOpen={createDashboardOpen}
+        onClose={() => setCreateDashboardOpen(false)}
+        onConfirm={handleDashboardCreateConfirm}
+      />
+
+      <DeleteConfirmModal
+        isOpen={deleteState.isOpen}
+        onClose={() => setDeleteState({ isOpen: false, type: null, id: null, name: '' })}
+        onConfirm={handleDeleteConfirm}
+        title={`Delete ${deleteState.type === 'dashboard' ? 'Dashboard' : deleteState.type === 'dataSource' ? 'Data Source' : 'Tile'}?`}
+        description={`Are you sure you want to delete this ${deleteState.type}? This action cannot be undone.`}
+        itemName={deleteState.name}
+      />
+
+      <DataSourceModal
+        isOpen={dataSourceModal.isOpen}
+        onClose={() => setDataSourceModal({ isOpen: false, mode: 'create', id: null })}
+        onSave={handleDataSourceSave}
+        dataSource={currentDataSource}
+        mode={dataSourceModal.mode}
+      />
+
+      <TileEditorModal
+        isOpen={tileModal.isOpen}
+        onClose={() => setTileModal({ isOpen: false, mode: 'create', tileId: null })}
+        onSave={handleTileSave}
+        tile={currentTile}
+        dataSources={dataSources}
+        mode={tileModal.mode}
+      />
+    </>
+  );
+}
+
+export default App;
