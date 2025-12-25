@@ -68,8 +68,8 @@ export function AreaChart({
   }, {} as ChartConfig);
 
   return (
-    <ChartContainer config={chartConfig} className={cn('h-full w-full', className)}>
-      <RechartsAreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+    <ChartContainer config={chartConfig} className={cn('h-full w-full min-h-0', className)}>
+      <RechartsAreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
         {showGrid && <CartesianGrid strokeDasharray="3 3" vertical={false} />}
         <XAxis
           dataKey={finalXKey}
@@ -96,6 +96,7 @@ export function AreaChart({
             stroke={colors[index % colors.length]}
             strokeWidth={2}
             stackId="1"
+            isAnimationActive={false}
           />
         ))}
       </RechartsAreaChart>

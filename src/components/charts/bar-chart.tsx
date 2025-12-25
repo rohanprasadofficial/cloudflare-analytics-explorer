@@ -69,11 +69,11 @@ export function BarChart({
   }, {} as ChartConfig);
 
   return (
-    <ChartContainer config={chartConfig} className={cn('h-full w-full', className)}>
+    <ChartContainer config={chartConfig} className={cn('h-full w-full min-h-0', className)}>
       <RechartsBarChart
         data={data}
         layout={layout}
-        margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+        margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
       >
         {showGrid && <CartesianGrid strokeDasharray="3 3" vertical={false} />}
         {layout === 'horizontal' ? (
@@ -121,6 +121,7 @@ export function BarChart({
             dataKey={key}
             fill={colors[index % colors.length]}
             radius={[4, 4, 0, 0]}
+            isAnimationActive={false}
           />
         ))}
       </RechartsBarChart>

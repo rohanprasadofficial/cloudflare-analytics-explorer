@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { Delete02Icon, ArrowDown01Icon, ArrowRight02Icon } from '@hugeicons/core-free-icons';
+import { Delete02Icon, ArrowDown01Icon, ArrowRight01Icon } from '@hugeicons/core-free-icons';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -87,7 +87,7 @@ export function ColumnMappingEditor({
           className="flex w-full items-center gap-2 px-4 py-2 text-sm font-medium hover:bg-muted/50"
         >
           <HugeiconsIcon
-            icon={expandedTypes[type] ? ArrowDown01Icon : ArrowRight02Icon}
+            icon={expandedTypes[type] ? ArrowDown01Icon : ArrowRight01Icon}
             size={14}
             strokeWidth={2}
           />

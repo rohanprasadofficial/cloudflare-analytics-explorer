@@ -30,6 +30,7 @@ import {
 } from '@/components/ui/select';
 import { Field, FieldLabel, FieldDescription } from '@/components/ui/field';
 import { cn } from '@/lib/utils';
+import { TILE_SIZE_PRESETS, getRecommendedSize, type TileSizePreset } from '@/components/dashboard/dashboard-grid';
 import type { Tile, DataSource, ChartType, ChartConfig, TilePosition, StatCardConfig } from '@/types/dashboard';
 
 interface TileEditorModalProps {
@@ -49,6 +50,15 @@ const CHART_TYPES: { type: ChartType; label: string; icon: typeof ChartLineData0
   { type: 'scatter', label: 'Scatter', icon: ChartScatterIcon, description: 'XY scatter plot' },
   { type: 'table', label: 'Table', icon: Table01Icon, description: 'Data table view' },
   { type: 'stat', label: 'Stat', icon: Analytics01Icon, description: 'Single value display' },
+];
+
+const SIZE_PRESET_INFO: { preset: TileSizePreset; label: string; description: string }[] = [
+  { preset: 'small', label: 'Small', description: '1×1 - Single stat' },
+  { preset: 'medium', label: 'Medium', description: '2×2 - Standard chart' },
+  { preset: 'wide', label: 'Wide', description: '3×2 - Wide chart' },
+  { preset: 'tall', label: 'Tall', description: '2×3 - Tall chart' },
+  { preset: 'full', label: 'Full Width', description: '4×2 - Full width' },
+  { preset: 'large', label: 'Large', description: '3×3 - Large chart' },
 ];
 
 const DEFAULT_POSITION: TilePosition = { x: 0, y: 0, width: 2, height: 2 };
@@ -74,6 +84,7 @@ export function TileEditorModal({
   const [query, setQuery] = useState('');
   const [chartType, setChartType] = useState<ChartType>('area');
   const [position, setPosition] = useState<TilePosition>(DEFAULT_POSITION);
+  const [sizePreset, setSizePreset] = useState<TileSizePreset>('medium');
   const [showLegend, setShowLegend] = useState(true);
   const [showGrid, setShowGrid] = useState(true);
 
@@ -91,6 +102,10 @@ export function TileEditorModal({
         setQuery(tile.query);
         setChartType(tile.chartConfig.type);
         setPosition(tile.position);
+        // Find matching preset or default to medium
+        const matchingPreset = (Object.entries(TILE_SIZE_PRESETS) as [TileSizePreset, { width: number; height: number }][])
+          .find(([, size]) => size.width === tile.position.width && size.height === tile.position.height)?.[0] || 'medium';
+        setSizePreset(matchingPreset);
         setShowLegend(tile.chartConfig.showLegend ?? true);
         setShowGrid(tile.chartConfig.showGrid ?? true);
         if (tile.chartConfig.statConfig) {
@@ -104,6 +119,7 @@ export function TileEditorModal({
         setQuery('SELECT date, views, visitors FROM analytics GROUP BY date');
         setChartType('area');
         setPosition(DEFAULT_POSITION);
+        setSizePreset('medium');
         setShowLegend(true);
         setShowGrid(true);
         setStatValueKey('');
@@ -112,6 +128,21 @@ export function TileEditorModal({
       }
     }
   }, [isOpen, tile, dataSources]);
+
+  // Handle chart type change and suggest size
+  const handleChartTypeChange = (type: ChartType) => {
+    setChartType(type);
+    // Auto-suggest recommended size for the chart type
+    const recommended = getRecommendedSize(type);
+    setSizePreset(recommended);
+    setPosition({ ...position, ...TILE_SIZE_PRESETS[recommended] });
+  };
+
+  // Handle size preset change
+  const handleSizePresetChange = (preset: TileSizePreset) => {
+    setSizePreset(preset);
+    setPosition({ ...position, ...TILE_SIZE_PRESETS[preset] });
+  };
 
   const handleSave = () => {
     if (!title.trim() || !dataSourceId || !query.trim()) return;
@@ -211,7 +242,7 @@ export function TileEditorModal({
                 <button
                   key={type}
                   type="button"
-                  onClick={() => setChartType(type)}
+                  onClick={() => handleChartTypeChange(type)}
                   className={cn(
                     'flex flex-col items-center gap-1 rounded border p-3 text-center transition-colors',
                     chartType === type
@@ -291,43 +322,50 @@ export function TileEditorModal({
             </div>
           )}
 
-          {/* Position */}
+          {/* Size Presets */}
           <div>
             <label className="mb-2 block text-sm font-medium">Size</label>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-              <Field>
-                <FieldLabel htmlFor="pos-width">Width (columns)</FieldLabel>
-                <Select
-                  value={String(position.width)}
-                  onValueChange={(v) => v && setPosition({ ...position, width: Number(v) })}
-                >
-                  <SelectTrigger id="pos-width">
-                    <SelectValue>{position.width}</SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">1</SelectItem>
-                    <SelectItem value="2">2</SelectItem>
-                    <SelectItem value="3">3</SelectItem>
-                    <SelectItem value="4">4 (Full)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="pos-height">Height (rows)</FieldLabel>
-                <Select
-                  value={String(position.height)}
-                  onValueChange={(v) => v && setPosition({ ...position, height: Number(v) })}
-                >
-                  <SelectTrigger id="pos-height">
-                    <SelectValue>{position.height}</SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">1 (Small)</SelectItem>
-                    <SelectItem value="2">2 (Medium)</SelectItem>
-                    <SelectItem value="3">3 (Large)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </Field>
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+              {SIZE_PRESET_INFO.map(({ preset, label, description }) => {
+                const size = TILE_SIZE_PRESETS[preset];
+                return (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => handleSizePresetChange(preset)}
+                    className={cn(
+                      'flex flex-col items-center gap-2 rounded border p-3 transition-colors',
+                      sizePreset === preset
+                        ? 'border-primary bg-primary/5 text-primary'
+                        : 'hover:bg-muted/50'
+                    )}
+                    title={description}
+                  >
+                    {/* Visual size representation */}
+                    <div className="grid h-8 w-12 grid-cols-4 gap-0.5">
+                      {Array.from({ length: 4 * 3 }).map((_, i) => {
+                        const col = i % 4;
+                        const row = Math.floor(i / 4);
+                        const isActive = col < size.width && row < size.height;
+                        return (
+                          <div
+                            key={i}
+                            className={cn(
+                              'rounded-sm',
+                              isActive
+                                ? sizePreset === preset
+                                  ? 'bg-primary'
+                                  : 'bg-muted-foreground/40'
+                                : 'bg-muted/50'
+                            )}
+                          />
+                        );
+                      })}
+                    </div>
+                    <span className="text-xs">{label}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>

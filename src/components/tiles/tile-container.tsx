@@ -109,8 +109,10 @@ export function TileContainer({
         onDelete={onDelete}
         onRefresh={handleRefresh}
       />
-      <CardContent className="flex-1 p-0">
-        {renderContent()}
+      <CardContent className="relative flex-1 overflow-hidden p-0">
+        <div className="absolute inset-0 p-3">
+          {renderContent()}
+        </div>
       </CardContent>
     </Card>
   );

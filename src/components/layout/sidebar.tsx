@@ -7,7 +7,6 @@ import {
   ArrowLeft01Icon,
   ArrowRight01Icon,
   ArrowDown01Icon,
-  ArrowRight02Icon,
 } from '@hugeicons/core-free-icons';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -55,8 +54,14 @@ export function Sidebar({
       <div className="flex h-14 items-center justify-between border-b px-3">
         {!isCollapsed && (
           <div className="flex items-center gap-2">
-            <div className="size-7 bg-primary" />
-            <span className="text-sm font-semibold">Visual AE</span>
+            <svg className="size-7" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="100" height="100" rx="20" className="fill-primary"/>
+              <path d="M20 75 L20 45 L32 45 L32 75 Z" fill="white"/>
+              <path d="M38 75 L38 30 L50 30 L50 75 Z" fill="white"/>
+              <path d="M56 75 L56 55 L68 55 L68 75 Z" fill="white"/>
+              <path d="M74 75 L74 20 L86 20 L86 75 Z" fill="white"/>
+            </svg>
+            <span className="text-sm font-semibold">AE Explorer</span>
           </div>
         )}
         <Button
@@ -89,7 +94,7 @@ export function Sidebar({
               <>
                 <span className="flex-1 text-left">Dashboards</span>
                 <HugeiconsIcon
-                  icon={dashboardsExpanded ? ArrowDown01Icon : ArrowRight02Icon}
+                  icon={dashboardsExpanded ? ArrowDown01Icon : ArrowRight01Icon}
                   size={14}
                   strokeWidth={2}
                 />
@@ -133,7 +138,7 @@ export function Sidebar({
               <>
                 <span className="flex-1 text-left">Data Sources</span>
                 <HugeiconsIcon
-                  icon={dataSourcesExpanded ? ArrowDown01Icon : ArrowRight02Icon}
+                  icon={dataSourcesExpanded ? ArrowDown01Icon : ArrowRight01Icon}
                   size={14}
                   strokeWidth={2}
                 />
@@ -169,7 +174,7 @@ export function Sidebar({
       {!isCollapsed && (
         <div className="border-t p-3">
           <p className="text-xs text-muted-foreground">
-            Visual AE v0.1.0
+            AE Explorer v0.1.0
           </p>
         </div>
       )}

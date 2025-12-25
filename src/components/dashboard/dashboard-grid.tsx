@@ -1,57 +1,175 @@
-import { cn } from '@/lib/utils';
+import { useMemo, useCallback } from 'react';
+import {
+  ResponsiveGridLayout,
+  useContainerWidth,
+  type LayoutItem,
+  type Layout,
+} from 'react-grid-layout';
+import 'react-grid-layout/css/styles.css';
 import type { Tile, TilePosition } from '@/types/dashboard';
 
 interface DashboardGridProps {
   tiles: Tile[];
   gridColumns: number;
   renderTile: (tile: Tile) => React.ReactNode;
-  onTileClick?: (tileId: string) => void;
+  onLayoutChange?: (tileId: string, position: TilePosition) => void;
+  isEditable?: boolean;
 }
 
-// Calculate row span based on tile positions
-function calculateGridRows(tiles: Tile[]): number {
-  if (tiles.length === 0) return 1;
-  return Math.max(...tiles.map((t) => t.position.y + t.position.height));
+// Convert tile positions to react-grid-layout format
+function tilesToLayout(tiles: Tile[]): Layout {
+  return tiles.map((tile) => ({
+    i: tile.id,
+    x: tile.position.x,
+    y: tile.position.y,
+    w: tile.position.width,
+    h: tile.position.height,
+    minW: 1,
+    minH: 1,
+    maxW: 4,
+    maxH: 4,
+  }));
 }
 
-// Convert position to grid CSS
-function getGridStyle(position: TilePosition, gridColumns: number) {
-  return {
-    gridColumn: `${position.x + 1} / span ${Math.min(position.width, gridColumns - position.x)}`,
-    gridRow: `${position.y + 1} / span ${position.height}`,
-  };
+// Predefined sizes for different chart types
+export const TILE_SIZE_PRESETS = {
+  small: { width: 1, height: 1 },      // Single stat
+  medium: { width: 2, height: 2 },     // Standard chart
+  wide: { width: 3, height: 2 },       // Wide chart
+  tall: { width: 2, height: 3 },       // Tall chart
+  full: { width: 4, height: 2 },       // Full width
+  large: { width: 3, height: 3 },      // Large chart
+} as const;
+
+export type TileSizePreset = keyof typeof TILE_SIZE_PRESETS;
+
+// Get recommended size preset for chart type
+export function getRecommendedSize(chartType: string): TileSizePreset {
+  switch (chartType) {
+    case 'stat':
+      return 'small';
+    case 'table':
+      return 'wide';
+    case 'pie':
+      return 'medium';
+    case 'scatter':
+      return 'large';
+    default:
+      return 'medium';
+  }
 }
 
 export function DashboardGrid({
   tiles,
   gridColumns,
   renderTile,
-  onTileClick,
+  onLayoutChange,
+  isEditable = true,
 }: DashboardGridProps) {
-  const gridRows = calculateGridRows(tiles);
+  const { width, containerRef, mounted } = useContainerWidth();
+  const layout = useMemo(() => tilesToLayout(tiles), [tiles]);
+
+  // Define responsive breakpoints
+  const breakpoints = useMemo(
+    () => ({ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }),
+    []
+  );
+
+  const cols = useMemo(
+    () => ({
+      lg: gridColumns,
+      md: Math.max(gridColumns - 1, 2),
+      sm: 2,
+      xs: 1,
+      xxs: 1,
+    }),
+    [gridColumns]
+  );
+
+  // Create layouts for all breakpoints
+  const layouts = useMemo(
+    () => ({
+      lg: layout,
+      md: layout,
+      sm: layout.map((l) => ({ ...l, w: Math.min(l.w, 2), x: l.x % 2 })),
+      xs: layout.map((l) => ({ ...l, w: 1, x: 0 })),
+      xxs: layout.map((l) => ({ ...l, w: 1, x: 0 })),
+    }),
+    [layout]
+  );
+
+  // Only update on drag/resize stop to avoid rapid state updates that cause crashes
+  const handleDragStop = useCallback(
+    (_layout: Layout, _oldItem: LayoutItem | null, newItem: LayoutItem | null) => {
+      if (!onLayoutChange || !newItem) return;
+
+      const originalTile = tiles.find((t) => t.id === newItem.i);
+      if (!originalTile) return;
+
+      const posChanged =
+        originalTile.position.x !== newItem.x ||
+        originalTile.position.y !== newItem.y ||
+        originalTile.position.width !== newItem.w ||
+        originalTile.position.height !== newItem.h;
+
+      if (posChanged) {
+        onLayoutChange(newItem.i, {
+          x: newItem.x,
+          y: newItem.y,
+          width: newItem.w,
+          height: newItem.h,
+        });
+      }
+    },
+    [onLayoutChange, tiles]
+  );
+
+  const handleResizeStop = useCallback(
+    (_layout: Layout, _oldItem: LayoutItem | null, newItem: LayoutItem | null) => {
+      if (!onLayoutChange || !newItem) return;
+
+      const originalTile = tiles.find((t) => t.id === newItem.i);
+      if (!originalTile) return;
+
+      onLayoutChange(newItem.i, {
+        x: newItem.x,
+        y: newItem.y,
+        width: newItem.w,
+        height: newItem.h,
+      });
+    },
+    [onLayoutChange, tiles]
+  );
+
+  if (tiles.length === 0) {
+    return null;
+  }
 
   return (
-    <div
-      className={cn(
-        'grid gap-4 p-6',
-        gridColumns === 4 && 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4',
-        gridColumns === 3 && 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
-        gridColumns === 2 && 'grid-cols-1 sm:grid-cols-2'
-      )}
-      style={{
-        gridTemplateRows: `repeat(${gridRows}, minmax(200px, auto))`,
-      }}
-    >
-      {tiles.map((tile) => (
-        <div
-          key={tile.id}
-          style={getGridStyle(tile.position, gridColumns)}
-          className="min-h-[200px]"
-          onClick={() => onTileClick?.(tile.id)}
+    <div ref={containerRef} className="p-4">
+      {mounted && (
+        <ResponsiveGridLayout
+          className="layout"
+          width={width}
+          layouts={layouts}
+          breakpoints={breakpoints}
+          cols={cols}
+          rowHeight={180}
+          margin={[16, 16]}
+          containerPadding={[0, 0]}
+          dragConfig={{ enabled: isEditable, handle: '.tile-drag-handle' }}
+          resizeConfig={{ enabled: isEditable, handles: ['se', 'sw', 'ne', 'nw'] }}
+          onDragStop={handleDragStop}
+          onResizeStop={handleResizeStop}
+          compactor={undefined}
         >
-          {renderTile(tile)}
-        </div>
-      ))}
+          {tiles.map((tile) => (
+            <div key={tile.id} className="h-full">
+              {renderTile(tile)}
+            </div>
+          ))}
+        </ResponsiveGridLayout>
+      )}
     </div>
   );
 }

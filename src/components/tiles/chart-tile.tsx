@@ -15,7 +15,7 @@ interface ChartTileProps {
 export function ChartTile({ config, data, className }: ChartTileProps) {
   if (!data || data.length === 0) {
     return (
-      <div className={cn('flex h-full items-center justify-center text-sm text-muted-foreground', className)}>
+      <div className={cn('flex h-full w-full items-center justify-center text-sm text-muted-foreground', className)}>
         No data available
       </div>
     );
@@ -28,7 +28,6 @@ export function ChartTile({ config, data, className }: ChartTileProps) {
     showLegend: config.showLegend,
     showGrid: config.showGrid,
     colors: config.colors,
-    className: cn('h-full w-full', className),
   };
 
   const chartComponents: Record<Exclude<ChartType, 'table' | 'stat'>, React.ReactElement> = {
@@ -43,11 +42,15 @@ export function ChartTile({ config, data, className }: ChartTileProps) {
 
   if (!ChartComponent) {
     return (
-      <div className={cn('flex h-full items-center justify-center text-sm text-muted-foreground', className)}>
+      <div className={cn('flex h-full w-full items-center justify-center text-sm text-muted-foreground', className)}>
         Unknown chart type: {config.type}
       </div>
     );
   }
 
-  return ChartComponent;
+  return (
+    <div className={cn('h-full w-full', className)}>
+      {ChartComponent}
+    </div>
+  );
 }

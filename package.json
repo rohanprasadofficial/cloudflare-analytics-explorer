@@ -22,6 +22,7 @@
     "hono": "^4.11.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-grid-layout": "^2.1.1",
     "recharts": "^2.15.4",
     "shadcn": "^3.6.2",
     "tailwind-merge": "^3.4.0",

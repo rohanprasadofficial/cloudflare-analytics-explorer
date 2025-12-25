@@ -8,7 +8,7 @@ import { DataSourceModal } from '@/components/modals/data-source-modal';
 import { TileEditorModal } from '@/components/modals/tile-editor-modal';
 import { useDashboards } from '@/hooks/use-dashboards';
 import { useDataSources } from '@/hooks/use-data-sources';
-import type { Tile, ColumnMapping } from '@/types/dashboard';
+import type { Tile, ColumnMapping, TilePosition } from '@/types/dashboard';
 
 type ViewMode = 'dashboard' | 'dataSources';
 
@@ -181,6 +181,14 @@ export function App() {
     [activeDashboardId, tileModal, addTile, updateTile]
   );
 
+  const handleTilePositionChange = useCallback(
+    (tileId: string, position: TilePosition) => {
+      if (!activeDashboardId) return;
+      updateTile(activeDashboardId, tileId, { position });
+    },
+    [activeDashboardId, updateTile]
+  );
+
   // Delete confirmation handler
   const handleDeleteConfirm = useCallback(() => {
     if (!deleteState.id) return;
@@ -235,6 +243,7 @@ export function App() {
             onTileAdd={handleTileAdd}
             onTileEdit={handleTileEdit}
             onTileDelete={handleTileDelete}
+            onTilePositionChange={handleTilePositionChange}
           />
         ) : viewMode === 'dataSources' ? (
           <DataSourceList

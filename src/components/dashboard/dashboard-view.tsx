@@ -4,7 +4,7 @@ import { DashboardGrid } from './dashboard-grid';
 import { EmptyDashboard } from './empty-dashboard';
 import { FilterBar } from '@/components/filters/filter-bar';
 import { TileContainer } from '@/components/tiles/tile-container';
-import type { Dashboard, DataSource, FilterValues, Tile } from '@/types/dashboard';
+import type { Dashboard, DataSource, FilterValues, Tile, TilePosition } from '@/types/dashboard';
 
 interface DashboardViewProps {
   dashboard: Dashboard;
@@ -15,6 +15,7 @@ interface DashboardViewProps {
   onTileAdd: () => void;
   onTileEdit: (tileId: string) => void;
   onTileDelete: (tileId: string) => void;
+  onTilePositionChange: (tileId: string, position: TilePosition) => void;
 }
 
 export function DashboardView({
@@ -26,6 +27,7 @@ export function DashboardView({
   onTileAdd,
   onTileEdit,
   onTileDelete,
+  onTilePositionChange,
 }: DashboardViewProps) {
   // Initialize filter values from dashboard defaults
   const [filterValues, setFilterValues] = useState<FilterValues>(() => {
@@ -116,6 +118,7 @@ export function DashboardView({
             tiles={dashboard.tiles}
             gridColumns={dashboard.gridColumns}
             renderTile={renderTile}
+            onLayoutChange={onTilePositionChange}
           />
         </div>
       )}

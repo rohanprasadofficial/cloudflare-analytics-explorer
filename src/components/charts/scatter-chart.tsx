@@ -69,8 +69,8 @@ export function ScatterChart({
   };
 
   return (
-    <ChartContainer config={chartConfig} className={cn('h-full w-full', className)}>
-      <RechartsScatterChart margin={{ top: 20, right: 20, left: 0, bottom: 0 }}>
+    <ChartContainer config={chartConfig} className={cn('h-full w-full min-h-0', className)}>
+      <RechartsScatterChart margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
         {showGrid && <CartesianGrid strokeDasharray="3 3" />}
         <XAxis
           dataKey={finalXKey}
@@ -112,6 +112,7 @@ export function ScatterChart({
           fillOpacity={0.6}
           stroke={colors[0]}
           strokeWidth={1}
+          isAnimationActive={false}
         />
       </RechartsScatterChart>
     </ChartContainer>

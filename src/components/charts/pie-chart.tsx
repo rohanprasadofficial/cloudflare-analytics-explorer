@@ -70,7 +70,7 @@ export function PieChart({
   }, {});
 
   return (
-    <ChartContainer config={chartConfig} className={cn('h-full w-full', className)}>
+    <ChartContainer config={chartConfig} className={cn('h-full w-full min-h-0', className)}>
       <RechartsPieChart margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
         <ChartTooltip
           content={
@@ -97,6 +97,7 @@ export function PieChart({
               : undefined
           }
           labelLine={showLabel}
+          isAnimationActive={false}
         >
           {data.map((_, index) => (
             <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />

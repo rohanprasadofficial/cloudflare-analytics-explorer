@@ -5,6 +5,7 @@ import {
   Delete02Icon,
   RefreshIcon,
   Maximize01Icon,
+  DragDropVerticalIcon,
 } from '@hugeicons/core-free-icons';
 import {
   DropdownMenu,
@@ -42,6 +43,9 @@ export function TileHeader({
       )}
     >
       <div className="flex items-center gap-2">
+        <div className="tile-drag-handle cursor-grab opacity-0 group-hover:opacity-50 hover:opacity-100 active:cursor-grabbing">
+          <HugeiconsIcon icon={DragDropVerticalIcon} size={14} strokeWidth={2} />
+        </div>
         <h3 className="text-sm font-medium">{title}</h3>
         {isLoading && (
           <div className="size-3 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
