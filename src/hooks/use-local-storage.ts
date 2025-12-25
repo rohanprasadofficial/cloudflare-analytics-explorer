@@ -58,9 +58,9 @@ export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T 
 
 // Storage keys
 export const STORAGE_KEYS = {
-  dashboards: 'visual-ae-dashboards',
-  dataSources: 'visual-ae-data-sources',
-  activeDashboard: 'visual-ae-active-dashboard',
-  sidebarState: 'visual-ae-sidebar-state',
-  filterValues: 'visual-ae-filter-values',
+  dashboards: 'analytics-explorer-dashboards',
+  dataSources: 'analytics-explorer-data-sources',
+  activeDashboard: 'analytics-explorer-active-dashboard',
+  sidebarState: 'analytics-explorer-sidebar-state',
+  filterValues: 'analytics-explorer-filter-values',
 } as const;

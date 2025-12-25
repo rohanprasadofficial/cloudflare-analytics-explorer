@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   Database02Icon,
@@ -9,11 +10,7 @@ import {
   ArrowRight01Icon,
 } from '@hugeicons/core-free-icons';
 
-interface LandingPageProps {
-  onGetStarted: () => void;
-}
-
-export function LandingPage({ onGetStarted }: LandingPageProps) {
+export function LandingPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950">
       {/* Header */}
@@ -26,23 +23,21 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
               <path d="M3 14h7v7H3v-7z" className="fill-zinc-400 dark:fill-zinc-600"/>
               <path d="M14 14h7v7h-7v-7z" className="fill-orange-500"/>
             </svg>
-            <span className="text-sm font-semibold tracking-wide uppercase">AE Explorer</span>
+            <span className="text-sm font-semibold tracking-wide uppercase">Analytics Explorer</span>
           </div>
           <div className="flex items-center gap-6">
-            <a
-              href="https://developers.cloudflare.com/analytics/analytics-engine/"
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              to="/wiki"
               className="text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
             >
               Docs
-            </a>
-            <button
-              onClick={onGetStarted}
+            </Link>
+            <Link
+              to="/explorer"
               className="bg-orange-600 px-4 py-1.5 text-xs font-medium text-white hover:bg-orange-500"
             >
               Get Started
-            </button>
+            </Link>
           </div>
         </div>
       </header>
@@ -50,7 +45,15 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
       {/* Hero */}
       <section className="border-b border-zinc-100 py-20 dark:border-zinc-900">
         <div className="mx-auto max-w-5xl px-6 text-center">
-          <h1 className="mx-auto max-w-3xl text-4xl font-normal tracking-tight text-zinc-900 sm:text-5xl dark:text-zinc-100">
+          <a
+            href="https://developers.cloudflare.com/analytics/analytics-engine/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2.5 rounded-full border border-orange-200 bg-orange-50 px-4 py-1.5 text-xs font-medium text-orange-700 transition-colors hover:bg-orange-100 dark:border-orange-800 dark:bg-orange-950 dark:text-orange-300 dark:hover:bg-orange-900"
+          >
+            Built for Cloudflare Analytics Engine
+          </a>
+          <h1 className="mx-auto mt-2 max-w-3xl text-3xl font-normal tracking-tight text-zinc-900 sm:text-5xl dark:text-zinc-100">
             Dashboards for Analytics Engine
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-lg text-zinc-500 dark:text-zinc-400">
@@ -65,12 +68,12 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
             >
               Learn About AE
             </a>
-            <button
-              onClick={onGetStarted}
+            <Link
+              to="/explorer"
               className="bg-orange-600 px-5 py-2 text-xs font-medium text-white hover:bg-orange-500"
             >
               Get Started
-            </button>
+            </Link>
           </div>
         </div>
       </section>
@@ -90,13 +93,13 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
             <p className="mt-4 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
               Auto-discover datasets from your Cloudflare account. Map generic columns like blob1 and double1 to meaningful names for easier querying.
             </p>
-            <button
-              onClick={onGetStarted}
+            <Link
+              to="/explorer"
               className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-orange-600 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-300"
             >
               Create Data Source
               <HugeiconsIcon icon={ArrowRight01Icon} size={14} />
-            </button>
+            </Link>
           </div>
           <div className="p-10">
             <p className="text-xs font-medium uppercase tracking-widest text-zinc-400">
@@ -110,13 +113,13 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
             <p className="mt-4 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
               Create dashboards with drag-and-drop tiles. Choose from multiple chart types, configure filters, and write SQL queries.
             </p>
-            <button
-              onClick={onGetStarted}
+            <Link
+              to="/explorer"
               className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-orange-600 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-300"
             >
               Create Dashboard
               <HugeiconsIcon icon={ArrowRight01Icon} size={14} />
-            </button>
+            </Link>
           </div>
         </div>
       </section>
@@ -203,12 +206,12 @@ ORDER BY date`}
               <p className="mx-auto mt-2 max-w-md text-sm text-zinc-500 dark:text-zinc-400">
                 Connect to Analytics Engine, create dashboards, and gain insights.
               </p>
-              <button
-                onClick={onGetStarted}
-                className="mt-5 bg-orange-600 px-5 py-2 text-xs font-medium text-white hover:bg-orange-500"
+              <Link
+                to="/explorer"
+                className="mt-5 inline-block bg-orange-600 px-5 py-2 text-xs font-medium text-white hover:bg-orange-500"
               >
                 Start Exploring
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -221,14 +224,14 @@ ORDER BY date`}
             <div>
               <p className="text-xs font-medium uppercase tracking-widest text-zinc-400">Product</p>
               <ul className="mt-3 space-y-2">
-                <li><button onClick={onGetStarted} className="text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100">Dashboards</button></li>
-                <li><button onClick={onGetStarted} className="text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100">Data Sources</button></li>
+                <li><Link to="/explorer" className="text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100">Dashboards</Link></li>
+                <li><Link to="/explorer" className="text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100">Data Sources</Link></li>
               </ul>
             </div>
             <div>
               <p className="text-xs font-medium uppercase tracking-widest text-zinc-400">Resources</p>
               <ul className="mt-3 space-y-2">
-                <li><button onClick={onGetStarted} className="text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100">Documentation</button></li>
+                <li><Link to="/wiki" className="text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100">Documentation</Link></li>
                 <li><a href="https://developers.cloudflare.com/analytics/analytics-engine/" target="_blank" rel="noopener noreferrer" className="text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100">Analytics Engine</a></li>
               </ul>
             </div>
@@ -255,7 +258,7 @@ ORDER BY date`}
                 <path d="M3 14h7v7H3v-7z" className="fill-zinc-400 dark:fill-zinc-600"/>
                 <path d="M14 14h7v7h-7v-7z" className="fill-orange-500"/>
               </svg>
-              <span className="text-sm text-zinc-400">AE Explorer</span>
+              <span className="text-sm text-zinc-400">Analytics Explorer</span>
             </div>
             <p className="text-xs text-zinc-400">
               Dashboard builder for Cloudflare Analytics Engine

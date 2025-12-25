@@ -179,9 +179,9 @@ export function WikiContent({ activeSection }: { activeSection: string }) {
 function GettingStartedSection() {
   return (
     <Section id="getting-started">
-      <H1>Getting Started with AE Explorer</H1>
+      <H1>Getting Started with Analytics Explorer</H1>
       <P>
-        AE Explorer is a dashboard builder for Cloudflare Analytics Engine. Build beautiful,
+        Analytics Explorer is a dashboard builder for Cloudflare Analytics Engine. Build beautiful,
         interactive dashboards to visualize your Analytics Engine data with a drag-and-drop interface.
       </P>
       <H3>What you can do</H3>
@@ -204,7 +204,7 @@ function QuickStartSection() {
 
       <CodeBlock title="Terminal">{`# 1. Clone and install dependencies
 git clone <repo-url>
-cd visual-ae
+cd cloudflare-analytics-explorer
 pnpm install
 
 # 2. Configure your credentials
@@ -309,7 +309,7 @@ function ConceptsSection() {
   return (
     <Section id="concepts">
       <H1>Core Concepts</H1>
-      <P>Understanding the key concepts will help you get the most out of AE Explorer.</P>
+      <P>Understanding the key concepts will help you get the most out of Analytics Explorer.</P>
 
       <H3>Data Sources</H3>
       <P>Data sources connect to your Analytics Engine datasets and define column mappings.</P>
@@ -330,7 +330,7 @@ function DummyDataSection() {
   return (
     <Section id="dummy-data">
       <H1>Understanding Dummy Data</H1>
-      <P>When you first open AE Explorer, you'll see pre-configured examples:</P>
+      <P>When you first open Analytics Explorer, you'll see pre-configured examples:</P>
 
       <List items={[
         <><strong>[Dummy] Sample Analytics</strong> - A sample data source</>,
@@ -1128,7 +1128,7 @@ function DeploymentSection() {
   return (
     <Section id="deployment">
       <H1>Deployment</H1>
-      <P>AE Explorer can be deployed to Cloudflare Workers for production use.</P>
+      <P>Analytics Explorer can be deployed to Cloudflare Workers for production use.</P>
     </Section>
   );
 }
@@ -1152,7 +1152,7 @@ npx wrangler secret put CF_API_TOKEN`}</CodeBlock>
         },
       ]} />
 
-      <P>Your app will be available at <Code>https://visual-ae.&lt;your-subdomain&gt;.workers.dev</Code></P>
+      <P>Your app will be available at <Code>https://cloudflare-analytics-explorer.&lt;your-subdomain&gt;.workers.dev</Code></P>
     </Section>
   );
 }

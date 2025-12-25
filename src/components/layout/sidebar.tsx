@@ -64,7 +64,7 @@ export function Sidebar({
               <path d="M56 75 L56 55 L68 55 L68 75 Z" fill="white"/>
               <path d="M74 75 L74 20 L86 20 L86 75 Z" fill="white"/>
             </svg>
-            <span className="text-sm font-semibold">AE Explorer</span>
+            <span className="text-sm font-semibold">Analytics Explorer</span>
           </div>
         )}
         <Button
@@ -187,7 +187,7 @@ export function Sidebar({
         </button>
         {!isCollapsed && (
           <p className="mt-2 px-2 text-xs text-muted-foreground">
-            AE Explorer v0.1.0
+            Analytics Explorer v0.1.0
           </p>
         )}
       </div>
