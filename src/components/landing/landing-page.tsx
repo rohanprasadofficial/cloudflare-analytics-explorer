@@ -33,7 +33,7 @@ export function LandingPage() {
               Docs
             </Link>
             <a
-              href="https://github.com/rohanprasadofficial/visual-ae-cloudflare"
+              href="https://github.com/rohanprasadofficial/cloudflare-analytics-explorer"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
