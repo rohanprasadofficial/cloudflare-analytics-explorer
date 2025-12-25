@@ -4,6 +4,9 @@
 
 A visual dashboard builder for exploring and visualizing data from [Cloudflare Analytics Engine](https://developers.cloudflare.com/analytics/analytics-engine/). Build custom dashboards with charts, tables, and stat cards using SQL queries against your Analytics Engine datasets.
 
+<img width="1323" height="640" alt="image" src="https://github.com/user-attachments/assets/fa827cbb-b3dc-499c-af1f-05e239b62f88" />
+
+
 ## Features
 
 - **Dashboard Builder** - Create multiple dashboards with drag-and-drop tile layouts
