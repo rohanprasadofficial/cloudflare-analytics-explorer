@@ -1,5 +1,8 @@
 # Cloudflare Analytics Explorer
 
+
+**Update: If you want to access the deployed version and update code for this, We have move to support this in Localflare** (https://localflare.dev) 
+
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/rohanprasadofficial/visual-ae-cloudflare)
 
 A visual dashboard builder for exploring and visualizing data from [Cloudflare Analytics Engine](https://developers.cloudflare.com/analytics/analytics-engine/). Build custom dashboards with charts, tables, and stat cards using SQL queries against your Analytics Engine datasets.
